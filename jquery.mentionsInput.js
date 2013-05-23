@@ -180,7 +180,7 @@
     }
 
     function getInputBoxValue() {
-      return $.trim(elmInputBox.val());
+      return elmInputBox.val();
     }
 
     function onAutoCompleteItemClick(e) {
