@@ -404,7 +404,26 @@
         if( settings.prefillMention ) {
           addMention( settings.prefillMention );
         }
+      },
 
+      renderNote : function(inputText, mentions) {
+        var syntaxMessage = inputText;
+        var mentionText = elmMentionsOverlaynutmark.find('div').html();
+        mentionText = (mentionText.length < inputText.length) ? inputText : mentionText;
+        var regex = new RegExp("@\\[([a-z]+):(\\d+)\\]", "gi");
+
+        var result;
+        _.each(mentions, function(m){
+          result = regex.exec(inputText);
+
+          mentionsCollection.push(m);
+          inputText = inputText.replace(result[0], m.name);
+          mentionText = mentionText.replace(result[0], settings.templates.mentionItemHighlight(m));
+        }, this);
+
+        elmInputBox.val(inputText);
+        elmInputBox.data('messageText', syntaxMessage);
+        elmMentionsOverlay.find('div').html(mentionText);
       },
 
       val : function (callback) {
