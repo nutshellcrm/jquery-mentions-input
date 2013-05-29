@@ -154,9 +154,9 @@
 
       // Using a regex to figure out positions
       var regex = new RegExp("\\" + settings.triggerChar + currentDataQuery, "gi");
-      regex.exec(currentMessage);
+      var result = regex.exec(currentMessage);
 
-      var startCaretPosition = regex.lastIndex - currentDataQuery.length - 1;
+      var startCaretPosition = regex.lastIndex - result[0].length;
       var currentCaretPosition = regex.lastIndex;
 
       var start = currentMessage.substr(0, startCaretPosition);
