@@ -407,18 +407,23 @@
       },
 
       renderNote : function(inputText, mentions) {
-        var syntaxMessage = inputText;
-        var mentionText = elmMentionsOverlaynutmark.find('div').html();
-        mentionText = (mentionText.length < inputText.length) ? inputText : mentionText;
-        var regex = new RegExp("@\\[([a-z]+):(\\d+)\\]", "gi");
+        var syntaxMessage = inputText,
+          mentionText = elmMentionsOverlay.find('div').html() || '',
+          mentionText = (mentionText.length < inputText.length) ? inputText : mentionText,
+          regex,
+          result;
 
-        var result;
+        mentions = mentions || mentionsCollection;
         _.each(mentions, function(m){
+          regex = new RegExp("@\\[" + m.type + ":" + m.id + "\\]", "gi");
           result = regex.exec(inputText);
-
-          mentionsCollection.push(m);
-          inputText = inputText.replace(result[0], m.name);
-          mentionText = mentionText.replace(result[0], settings.templates.mentionItemHighlight(m));
+          
+          if (result && result.length) {
+            mentionsCollection.push(m);
+            inputText = inputText.replace(result[0], m.value);
+            mentionText = mentionText.replace(result[0], settings.templates.mentionItemHighlight(m));
+            console.log(inputText);
+          }
         }, this);
 
         elmInputBox.val(inputText);
