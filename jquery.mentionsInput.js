@@ -407,6 +407,7 @@
       },
 
       renderNote : function(inputText, mentions) {
+        if (inputText === undefined) return;
         var syntaxMessage = inputText,
           mentionText = elmMentionsOverlay.find('div').html() || '',
           mentionText = (mentionText.length < inputText.length) ? inputText : mentionText,
@@ -422,7 +423,6 @@
             mentionsCollection.push(m);
             inputText = inputText.replace(result[0], m.value);
             mentionText = mentionText.replace(result[0], settings.templates.mentionItemHighlight(m));
-            console.log(inputText);
           }
         }, this);
 
