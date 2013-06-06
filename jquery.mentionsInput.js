@@ -416,7 +416,11 @@
 
         mentions = mentions || mentionsCollection;
         _.each(mentions, function(m){
-          regex = new RegExp("@\\[" + m.type + ":" + m.id + "\\]", "gi");
+          if (m.type === 'Leads') {
+            regex = new RegExp("Leads?-" + m.id, "gi");  
+          } else {
+            regex = new RegExp("@\\[" + m.type + ":" + m.id + "\\]", "gi");
+          }
           result = regex.exec(inputText);
           
           if (result && result.length) {
