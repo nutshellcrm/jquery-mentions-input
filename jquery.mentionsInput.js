@@ -319,9 +319,12 @@
       elmAutocompleteList.show();
 
       // Filter items that has already been mentioned
-      var mentionValues = _.pluck(mentionsCollection, 'value');
+      var mentionValues = _.map(mentionsCollection, function(item) {
+        return item.type + item.id;
+      });
+
       results = _.reject(results, function (item) {
-        return _.include(mentionValues, item.name);
+        return _.include(mentionValues, item.type + item.id);
       });
 
       if (!results.length) {
