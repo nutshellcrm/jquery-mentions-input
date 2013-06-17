@@ -339,29 +339,32 @@
         var itemUid = _.uniqueId('mention_');
 
         autocompleteItemCollection[itemUid] = _.extend({}, item, {value: item.name});
+        if (_.isObject(item.rawListItem)) {
+          elmListItem = $(item.rawListItem);
+        } else if (_.isFunction(settings.templates.autocompleteListItem)) {
+          var elmListItem = $(settings.templates.autocompleteListItem({
+            'id'      : utils.htmlEncode(item.id),
+            'display' : utils.htmlEncode(item.name),
+            'type'    : utils.htmlEncode(item.type),
+            'content' : utils.highlightTerm(utils.htmlEncode((item.name)), query)
+          }));
 
-        var elmListItem = $(settings.templates.autocompleteListItem({
-          'id'      : utils.htmlEncode(item.id),
-          'display' : utils.htmlEncode(item.name),
-          'type'    : utils.htmlEncode(item.type),
-          'content' : utils.highlightTerm(utils.htmlEncode((item.name)), query)
-        })).attr('data-uid', itemUid);
-
-        if (index === 0) {
-          selectAutoCompleteItem(elmListItem);
-        }
-
-        if (settings.showAvatars) {
-          var elmIcon;
-
-          if (item.avatar) {
-            elmIcon = $(settings.templates.autocompleteListItemAvatar({ avatar : item.avatar }));
-          } else {
-            elmIcon = $(settings.templates.autocompleteListItemIcon({ icon : item.icon }));
+          if (index === 0) {
+            selectAutoCompleteItem(elmListItem);
           }
-          elmIcon.prependTo(elmListItem);
+
+          if (settings.showAvatars) {
+            var elmIcon;
+
+            if (item.avatar) {
+              elmIcon = $(settings.templates.autocompleteListItemAvatar({ avatar : item.avatar }));
+            } else {
+              elmIcon = $(settings.templates.autocompleteListItemIcon({ icon : item.icon }));
+            }
+            elmIcon.prependTo(elmListItem);
+          }
         }
-        elmListItem = elmListItem.appendTo(elmDropDownList);
+        elmListItem = elmListItem.attr('data-uid', itemUid).appendTo(elmDropDownList);
       });
 
       elmAutocompleteList.show();
