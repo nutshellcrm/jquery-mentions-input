@@ -18,7 +18,10 @@
     minChars      : 2,
     showAvatars   : true,
     elastic       : true,
-    onCaret       : false,    
+    onCaret       : false,
+    minCharsNoTrigger : 4,   // trigger complete after this many chars without a space
+    searchDelay       : 300, // won't start searching until there's no typing for Xms
+    spaceResetDelay   : 200, // won't reset on space if typing within Xms
     classes       : {
       autoCompleteItemActive : "active"
     },
@@ -70,6 +73,8 @@
     var autocompleteItemCollection = {};
     var inputBuffer = [];
     var currentDataQuery;
+    var timeout = null;
+    var resetTimeout = null;
 
     settings = $.extend(true, {}, defaultSettings, settings );
 
@@ -136,6 +141,7 @@
     }
 
     function resetBuffer() {
+      clearTimeout(this.timeout);
       inputBuffer = [];
     }
 
@@ -155,9 +161,20 @@
       // Using a regex to figure out positions
       var regex = new RegExp("\\" + settings.triggerChar + currentDataQuery, "gi");
       var result = regex.exec(currentMessage);
+      var startCaretPosition;
+      var currentCaretPosition;
 
-      var startCaretPosition = regex.lastIndex - result[0].length;
-      var currentCaretPosition = regex.lastIndex;
+      if (!result) {
+        var caret = elmInputBox.caret();
+        currentCaretPosition = caret.begin;
+        startCaretPosition = currentCaretPosition - currentDataQuery.length;
+        if (currentMessage[startCaretPosition] == ' ') {
+          startCaretPosition += 1;
+        }
+      } else {
+        startCaretPosition = regex.lastIndex - result[0].length;
+        currentCaretPosition = regex.lastIndex;
+      }
 
       var start = currentMessage.substr(0, startCaretPosition);
       var end = currentMessage.substr(currentCaretPosition, currentMessage.length);
@@ -229,7 +246,7 @@
       updateMentionsCollection();
 
       var triggerCharIndex = _.lastIndexOf(inputBuffer, settings.triggerChar);
-      if (triggerCharIndex > -1) {
+      if (triggerCharIndex > -1 || inputBuffer.length >= settings.minCharsNoTrigger) {
         currentDataQuery = inputBuffer.slice(triggerCharIndex + 1).join('');
         currentDataQuery = utils.rtrim(currentDataQuery);
 
@@ -238,6 +255,15 @@
     }
 
     function onInputBoxKeyPress(e) {
+      clearTimeout(this.resetTimeout);
+      if(e.keyCode == KEY.SPACE && (_.contains(inputBuffer, ' ') || !_.contains(inputBuffer, settings.triggerChar))) {
+        // clear the buffer on space, unless they keep typing
+        this.resetTimeout = setTimeout(function() {
+          resetBuffer();
+          hideAutoComplete();
+        }, settings.spaceResetDelay);
+      }
+
       if(e.keyCode !== KEY.BACKSPACE) {
         var typedValue = String.fromCharCode(e.which || e.keyCode);
         inputBuffer.push(typedValue);
@@ -373,13 +399,23 @@
     }
 
     function doSearch(query) {
-      if (query && query.length && query.length >= settings.minChars) {
-        settings.onDataRequest.call(this, 'search', query, function (responseData) {
-          populateDropdown(query, responseData);
-        });
-      } else {
-        hideAutoComplete();
-      }
+      clearTimeout(this.timeout);
+      this.timeout = setTimeout(function() {
+        var caretPosition = elmInputBox.caret(),
+          inputBoxValue = getInputBoxValue().substring(0, caretPosition.begin),
+          regex = new RegExp("\\S+$", "i"), // get last word if not using triggerChar
+          regexResult = regex.exec(inputBoxValue);
+        if (!regexResult) return;
+
+        query = (query[0] == settings.triggerChar) ? query.substr(1) : query;
+        if (query && query.length && query.length >= settings.minChars) {
+          settings.onDataRequest.call(this, 'search', query, function (responseData) {
+            populateDropdown(query, responseData);
+          });
+        } else {
+          hideAutoComplete();
+        }
+      }, settings.searchDelay);
     }
 
     function positionAutocomplete(elmAutocompleteList, elmInputBox) {
@@ -489,3 +525,38 @@
   };
 
 })(jQuery, _);
+
+$.fn.caret = function (begin, end) {
+    if (this.length == 0) return;
+    if (typeof begin == 'number')
+    {
+        end = (typeof end == 'number') ? end : begin;
+        return this.each(function ()
+        {
+            if (this.setSelectionRange)
+            {
+                this.setSelectionRange(begin, end);
+            } else if (this.createTextRange)
+            {
+                var range = this.createTextRange();
+                range.collapse(true);
+                range.moveEnd('character', end);
+                range.moveStart('character', begin);
+                try { range.select(); } catch (ex) { }
+            }
+        });
+    } else
+    {
+        if (this[0].setSelectionRange)
+        {
+            begin = this[0].selectionStart;
+            end = this[0].selectionEnd;
+        } else if (document.selection && document.selection.createRange)
+        {
+            var range = document.selection.createRange();
+            begin = 0 - range.duplicate().moveStart('character', -100000);
+            end = begin + range.text.length;
+        }
+        return { begin: begin, end: end };
+    }
+};
