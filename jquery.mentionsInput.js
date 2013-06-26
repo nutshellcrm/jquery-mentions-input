@@ -338,6 +338,9 @@
       elmItem.addClass(settings.classes.autoCompleteItemActive);
       elmItem.siblings().removeClass(settings.classes.autoCompleteItemActive);
 
+      // if in an overflow container, make sure the current item is visibile (for keyboard nav)
+      elmAutocompleteList.scrollTop(elmItem[0].offsetTop);
+
       elmActiveAutoCompleteItem = elmItem;
     }
 
@@ -408,6 +411,8 @@
         if (!regexResult) return;
 
         query = (query[0] == settings.triggerChar) ? query.substr(1) : query;
+        currentDataQuery = query;
+        
         if (query && query.length && query.length >= settings.minChars) {
           settings.onDataRequest.call(this, 'search', query, function (responseData) {
             populateDropdown(query, responseData);
