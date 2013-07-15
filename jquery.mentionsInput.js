@@ -288,6 +288,13 @@
       }
 
       if (e.keyCode == KEY.BACKSPACE) {
+        _.defer(function() {
+          if (getInputBoxValue().length === 0) {
+            hideAutoComplete();
+            resetBuffer();
+          }
+        });
+        
         inputBuffer = inputBuffer.slice(0, -1 + inputBuffer.length); // Can't use splice, not available in IE
         return;
       }
