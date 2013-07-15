@@ -188,7 +188,8 @@
       hideAutoComplete();
 
       // Mentions & syntax message
-      var updatedMessageText = start + mention.value + ' ' + end;
+      if (end[0] != ' ') end = ' ' + end;
+      var updatedMessageText = start + mention.value + end;
       elmInputBox.val(updatedMessageText);
       updateValues();
 
