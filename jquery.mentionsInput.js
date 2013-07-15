@@ -166,7 +166,8 @@
 
       if (!result) {
         var caret = elmInputBox.caret();
-        currentCaretPosition = caret.begin;
+
+        currentCaretPosition = caret.begin + currentMessage.substr(caret.begin).match("\\s|$").index;
         startCaretPosition = currentCaretPosition - currentDataQuery.length;
         if (currentMessage[startCaretPosition] == ' ') {
           startCaretPosition += 1;
@@ -200,6 +201,16 @@
 
     function getInputBoxValue() {
       return elmInputBox.val();
+    }
+
+    // returns either the last word or up to two words following the
+    // triggerChar, based on the position in the string
+    function getQuery(string, position) {
+        var spacePos = position + string.substr(position).match("\\s|$").index,
+          substring = string.substr(0, spacePos),
+          lastWord = substring.match("(" + settings.triggerChar + "\\S+\\s)?\\S+\\s*$", "i");
+        if (lastWord) return lastWord[0];
+        return null;
     }
 
     // This is taken straight from live (as of Sep 2012) GitHub code. The
@@ -246,10 +257,9 @@
       updateValues();
       updateMentionsCollection();
 
-      var triggerCharIndex = _.lastIndexOf(inputBuffer, settings.triggerChar);
-      if (triggerCharIndex > -1 || inputBuffer.length >= settings.minCharsNoTrigger) {
-        currentDataQuery = inputBuffer.slice(triggerCharIndex + 1).join('');
-        currentDataQuery = utils.rtrim(currentDataQuery);
+      var lastWord = getQuery(getInputBoxValue(), elmInputBox.caret().begin);
+      if (lastWord && lastWord.length >= settings.minCharsNoTrigger) {
+        currentDataQuery = utils.rtrim(lastWord);
 
         _.defer(_.bind(doSearch, this, currentDataQuery));
       }
@@ -412,11 +422,6 @@
     function doSearch(query) {
       clearTimeout(this.timeout);
       this.timeout = setTimeout(function() {
-        var caretPosition = elmInputBox.caret(),
-          inputBoxValue = getInputBoxValue().substring(0, caretPosition.begin),
-          regex = new RegExp("\\S+$", "i"), // get last word if not using triggerChar
-          regexResult = regex.exec(inputBoxValue);
-        if (!regexResult) return;
 
         query = (query[0] == settings.triggerChar) ? query.substr(1) : query;
         currentDataQuery = query;
