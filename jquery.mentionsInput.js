@@ -396,10 +396,6 @@
             'content' : utils.highlightTerm(utils.htmlEncode((item.name)), query)
           }));
 
-          if (index === 0) {
-            selectAutoCompleteItem(elmListItem);
-          }
-
           if (settings.showAvatars) {
             var elmIcon;
 
@@ -410,6 +406,9 @@
             }
             elmIcon.prependTo(elmListItem);
           }
+        }
+        if (index === 0) {
+          selectAutoCompleteItem(elmListItem);
         }
         elmListItem = elmListItem.attr('data-uid', itemUid).appendTo(elmDropDownList);
       });
