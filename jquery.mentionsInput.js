@@ -22,6 +22,7 @@
     minCharsNoTrigger : 4,   // trigger complete after this many chars without a space
     searchDelay       : 300, // won't start searching until there's no typing for Xms
     spaceResetDelay   : 200, // won't reset on space if typing within Xms
+    onTriggerChar     : null, // callback when the user hits the triggerChar, for displaying initial lists
     classes       : {
       autoCompleteItemActive : "active"
     },
@@ -256,12 +257,19 @@
       updateValues();
       updateMentionsCollection();
 
-      var lastWord = getQuery(getInputBoxValue(), elmInputBox.caret().begin);
-      if (lastWord && lastWord.length >= settings.minCharsNoTrigger) {
-        currentDataQuery = utils.rtrim(lastWord);
-
-        _.defer(_.bind(doSearch, this, currentDataQuery));
-      }
+      // need to defer so elmInputBox.caret() gets the accurate caret position
+      _.defer(function() {
+        var lastWord = getQuery(getInputBoxValue(), elmInputBox.caret().begin);
+        if (lastWord && lastWord.length >= settings.minCharsNoTrigger) {
+          currentDataQuery = lastWord;
+          doSearch.call(this, currentDataQuery);
+        } else if (lastWord && lastWord[0] === settings.triggerChar && _.isFunction(settings.onTriggerChar)) {
+          currentDataQuery = (lastWord.length > 1) ? lastWord.substr(1) : '';
+          settings.onTriggerChar.call(this, currentDataQuery, function (responseData) {
+            populateDropdown(currentDataQuery, responseData);
+          });
+        }
+      });
     }
 
     function onInputBoxKeyPress(e) {
