@@ -74,7 +74,6 @@
     var inputBuffer = [];
     var currentDataQuery;
     var timeout = null;
-    var resetTimeout = null;
 
     settings = $.extend(true, {}, defaultSettings, settings );
 
@@ -208,7 +207,7 @@
     function getQuery(string, position) {
         var spacePos = position + string.substr(position).match("\\s|$").index,
           substring = string.substr(0, spacePos),
-          lastWord = substring.match("(" + settings.triggerChar + "\\S+\\s)?\\S+\\s*$", "i");
+          lastWord = substring.match("(" + settings.triggerChar + "\\S+\\s)?\\S+$", "i");
         if (lastWord) return lastWord[0];
         return null;
     }
@@ -268,11 +267,9 @@
     function onInputBoxKeyPress(e) {
       clearTimeout(this.resetTimeout);
       if(e.keyCode == KEY.SPACE && (_.contains(inputBuffer, ' ') || !_.contains(inputBuffer, settings.triggerChar))) {
-        // clear the buffer on space, unless they keep typing
-        this.resetTimeout = setTimeout(function() {
-          resetBuffer();
-          hideAutoComplete();
-        }, settings.spaceResetDelay);
+        resetBuffer();
+        hideAutoComplete();
+        return;
       }
 
       if(e.keyCode !== KEY.BACKSPACE) {
