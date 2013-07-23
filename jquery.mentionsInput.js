@@ -427,13 +427,14 @@
       clearTimeout(this.timeout);
       this.timeout = setTimeout(function() {
 
-        query = (query[0] == settings.triggerChar) ? query.substr(1) : query;
+        var usingTriggerChar = (query[0] == settings.triggerChar);
+        query = usingTriggerChar ? query.substr(1) : query;
         currentDataQuery = query;
         
         if (query && query.length && query.length >= settings.minChars) {
           settings.onDataRequest.call(this, 'search', query, function (responseData) {
             populateDropdown(query, responseData);
-          });
+          }, usingTriggerChar);
         } else {
           hideAutoComplete();
         }
