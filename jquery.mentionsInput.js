@@ -309,6 +309,10 @@
             hideAutoComplete();
             resetBuffer();
           }
+          if (navigator.userAgent.indexOf("MSIE 9") > -1) {
+            resetBuffer();
+            updateValues();
+          }
         });
         
         inputBuffer = inputBuffer.slice(0, -1 + inputBuffer.length); // Can't use splice, not available in IE
