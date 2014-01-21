@@ -19,7 +19,7 @@
     showAvatars   : true,
     elastic       : true,
     onCaret       : false,
-    minCharsNoTrigger : 4,   // trigger complete after this many chars without a space
+    minCharsNoTrigger : 4,   // trigger complete after this many chars without a space; false to disable
     searchDelay       : 300, // won't start searching until there's no typing for Xms
     spaceResetDelay   : 200, // won't reset on space if typing within Xms
     onTriggerChar     : null, // callback when the user hits the triggerChar, for displaying initial lists
@@ -260,8 +260,11 @@
       // need to defer so elmInputBox.caret() gets the accurate caret position
       _.defer(function() {
         var lastWord = getQuery(getInputBoxValue(), elmInputBox.caret().begin);
-        if (lastWord && lastWord.length >= settings.minCharsNoTrigger) {
+        if (settings.minCharsNoTrigger && lastWord && lastWord.length >= settings.minCharsNoTrigger) {
           currentDataQuery = lastWord;
+          doSearch.call(this, currentDataQuery);
+        } else if (!settings.minCharsNoTrigger && lastWord && lastWord[0] === settings.triggerChar && lastWord.length >= settings.minChars) {
+          currentDataQuery = (lastWord.length > 1) ? lastWord.substr(1) : '';
           doSearch.call(this, currentDataQuery);
         } else if (lastWord && lastWord[0] === settings.triggerChar && _.isFunction(settings.onTriggerChar)) {
           currentDataQuery = (lastWord.length > 1) ? lastWord.substr(1) : '';
