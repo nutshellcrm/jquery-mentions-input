@@ -263,7 +263,7 @@
         if (settings.minCharsNoTrigger && lastWord && lastWord.length >= settings.minCharsNoTrigger) {
           currentDataQuery = lastWord;
           doSearch.call(this, currentDataQuery);
-        } else if (!settings.minCharsNoTrigger && lastWord && lastWord[0] === settings.triggerChar && lastWord.length >= settings.minChars) {
+        } else if (!settings.minCharsNoTrigger && lastWord && lastWord[0] === settings.triggerChar && lastWord.length >= (settings.minChars + 1)) {
           currentDataQuery = (lastWord.length > 1) ? lastWord.substr(1) : '';
           doSearch.call(this, currentDataQuery);
         } else if (lastWord && lastWord[0] === settings.triggerChar && _.isFunction(settings.onTriggerChar)) {
