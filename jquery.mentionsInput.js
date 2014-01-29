@@ -208,7 +208,9 @@
     function getQuery(string, position) {
         var spacePos = position + string.substr(position).match("\\s|$").index,
           substring = string.substr(0, spacePos),
-          lastWord = substring.match("(" + settings.triggerChar + "\\S+\\s)?\\S+$", "i");
+          // start of regex changes depending on whether minCharsNoTrigger is enabled
+          trigger = (settings.minCharsNoTrigger === false) ? (settings.triggerChar + "(") : ("(" + settings.triggerChar),
+          lastWord = substring.match(trigger + "\\S+\\s)?\\S+$", "i");
         if (lastWord) return lastWord[0];
         return null;
     }
