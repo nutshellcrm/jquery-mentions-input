@@ -275,6 +275,8 @@
           settings.onTriggerChar.call(this, currentDataQuery, function (responseData) {
             populateDropdown(currentDataQuery, responseData);
           });
+        } else {
+          hideAutoComplete();
         }
       });
     }
