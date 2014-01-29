@@ -212,6 +212,8 @@
           trigger = (settings.minCharsNoTrigger === false) ? (settings.triggerChar + "(") : ("(" + settings.triggerChar),
           lastWord = substring.match(trigger + "\\S+\\s)?\\S+$", "i");
         if (lastWord) return lastWord[0];
+        // so we can still call onTriggerChar without any characters
+        if (substring.match("(^|\\s)" + settings.triggerChar + "$")) return settings.triggerChar;
         return null;
     }
 
