@@ -137,7 +137,7 @@
       mentionText = mentionText.replace(/ {2}/g, '&nbsp; ');
 
       elmInputBox.data('messageText', syntaxMessage);
-      elmMentionsOverlay.find('div').text(mentionText);
+      elmMentionsOverlay.find('div').html(mentionText);
     }
 
     function resetBuffer() {
@@ -508,9 +508,9 @@
           }
         }, this);
 
-        elmInputBox.val(inputText);
+        elmInputBox.val(_.unescape(inputText));
         elmInputBox.data('messageText', syntaxMessage);
-        elmMentionsOverlay.find('div').text(mentionText);
+        elmMentionsOverlay.find('div').html(mentionText);
       },
 
       val : function (callback) {
