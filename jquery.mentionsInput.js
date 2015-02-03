@@ -484,13 +484,16 @@
         }
       },
 
-      renderNote : function(inputText, mentions) {
-        if (inputText === undefined) return;
-        var syntaxMessage = inputText,
-          mentionText = elmMentionsOverlay.find('div').html() || '',
-          mentionText = (mentionText.length < inputText.length) ? inputText : mentionText,
-          regex,
-          result;
+      renderNote : function(rawText, mentions) {
+        //rawText example: "@[user:123-users] some string"
+        if (rawText === undefined) return;
+
+        var regex,
+            result,
+            displayText,
+            displayTextOverlay;
+
+        displayText = displayTextOverlay = _.escape(rawText);
 
         mentions = mentions || mentionsCollection;
         _.each(mentions, function(m){
@@ -499,18 +502,25 @@
           } else {
             regex = new RegExp("@\\[" + m.type + ":" + m.id + "\\]", "gi");
           }
-          result = regex.exec(inputText);
+          result = regex.exec(displayText);
           
           if (result && result.length) {
             mentionsCollection.push(m);
-            inputText = inputText.replace(result[0], m.value);
-            mentionText = mentionText.replace(result[0], settings.templates.mentionItemHighlight(m));
+             // @[user:123-users] -> Flavio daCosta
+            displayText = displayText.replace(result[0], m.value);
+             // @[user:123-users] -> <span>..Flavio daCosta..</span>
+            displayTextOverlay = displayTextOverlay.replace(result[0], settings.templates.mentionItemHighlight(m));
           }
         }, this);
 
-        elmInputBox.val(_.unescape(inputText));
-        elmInputBox.data('messageText', syntaxMessage);
-        elmMentionsOverlay.find('div').html(mentionText);
+        //this is what the user sees
+        elmInputBox.val(_.unescape(displayText));
+
+        //this is what we send to the database.
+        elmInputBox.data('messageText', rawText);
+
+        //this is the html in the hidden div overlay
+        elmMentionsOverlay.find('div').html(displayTextOverlay);
       },
 
       val : function (callback) {
